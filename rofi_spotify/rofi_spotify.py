@@ -26,9 +26,9 @@ def select(data, prompt, rofi, select=None):
 def run():
     rofi = Rofi()
 
-    username = os.environ.get("USERNAME")
+    username = os.environ.get("ROFI_SPOTIFY_USERNAME")
     scope = 'user-library-read user-read-currently-playing user-read-playback-state user-library-modify playlist-modify-private playlist-read-private playlist-modify-public playlist-read-collaborative'
-    token = util.prompt_for_user_token(os.environ.get("USERNAME"), scope)
+    token = util.prompt_for_user_token(username, scope)
         
     sp = spotipy.Spotify(token)
     print(args)
