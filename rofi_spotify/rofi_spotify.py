@@ -29,6 +29,8 @@ def load_config():
         config.read(config_path)
         os.environ["SPOTIPY_CLIENT_ID"] = config['spotipy']['client_id']
         os.environ["SPOTIPY_CLIENT_SECRET"] = config['spotipy']['client_secret']
+        os.environ["SPOTIPY_CLIENT_SECRET"] = config['spotipy']['redirect_uri']
+
         os.environ["SPOTIFY_USERNAME"] = config['spotify']['spotify_username']
 
     else:
@@ -41,6 +43,7 @@ def load_config():
         config['spotipy'] = {}
         config['spotipy']['client_id'] = str(input("Please enter the Client ID you received after the previous step."))
         config['spotipy']['client_secret'] = str(input("Please enter the Client Secret you received after the previous step."))
+        config['spotipy']['redirect_uri'] = str(input("Please enter the Redirect URI you added."))
 
         config['spotify'] = {}
         config['spotify']['spotify_username'] = str(input("Please enter your Spotify username."))
