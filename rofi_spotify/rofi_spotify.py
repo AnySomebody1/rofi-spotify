@@ -42,6 +42,7 @@ def getArtistTitleForID(sp, track_id):
 
 def run():
     rofi = Rofi()
+
     rofi_args = args.args or []
     if not args.case_sensitive:
         rofi_args = rofi_args.append('-i')
