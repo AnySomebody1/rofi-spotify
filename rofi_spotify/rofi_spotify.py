@@ -29,7 +29,7 @@ def load_config():
         config.read(config_path)
         os.environ["SPOTIPY_CLIENT_ID"] = config['spotipy']['client_id']
         os.environ["SPOTIPY_CLIENT_SECRET"] = config['spotipy']['client_secret']
-        os.environ["SPOTIPY_CLIENT_SECRET"] = config['spotipy']['redirect_uri']
+        os.environ["SPOTIPY_REDIRECT_URI"] = config['spotipy']['redirect_uri']
 
         os.environ["SPOTIFY_USERNAME"] = config['spotify']['spotify_username']
 
