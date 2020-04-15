@@ -47,6 +47,7 @@ def load_config():
 
         with open(config_path, 'w') as configfile:
             config.write(configfile)
+        load_config()
 
 # TODO Only select editable playlists
 def getPlaylists(sp, onlyEditable=True):
