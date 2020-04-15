@@ -4,7 +4,7 @@ setup(
     name='rofi_spotify',
     version='0.0.1',
     install_requires=['python-rofi', 'spotipy'],
-    packages=['rofi', 'rofi-spotify'],
+    packages=['rofi-spotify'],
     url='https://github.com/AnySomebody1/rofi-spotify',
     license='GPLv3+',
     author='Any Somebody',
