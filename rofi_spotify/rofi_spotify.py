@@ -45,6 +45,8 @@ def load_config():
         config['spotify'] = {}
         config['spotify']['spotify_username'] = str(input("Please enter your Spotify username."))
 
+        if not os.path.exists(config_dir):
+            os.mkdir(config_dir
         with open(config_path, 'w') as configfile:
             config.write(configfile)
         load_config()
