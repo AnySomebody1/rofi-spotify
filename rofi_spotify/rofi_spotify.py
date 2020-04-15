@@ -71,7 +71,7 @@ def run():
     if not args.case_sensitive:
         rofi_args = rofi_args.append('-i')
 
-    username = os.getenv["SPOTIFY_USERNAME"]
+    username = os.getenv(["SPOTIFY_USERNAME"])
     scope = "user-library-read user-read-currently-playing user-read-playback-state user-library-modify playlist-modify-private playlist-read-private playlist-modify-public playlist-read-collaborative"
     token = util.prompt_for_user_token(username, scope)
     sp = spotipy.Spotify(token)
