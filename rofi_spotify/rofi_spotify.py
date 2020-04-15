@@ -19,15 +19,6 @@ parser.add_argument('-r', '--args', nargs=argparse.REMAINDER, help='Command line
 
 args = parser.parse_args()
 
-
-def select(data, prompt, rofi, select=None):
-    index, key = rofi.select(prompt, data, select=select)
-
-    if key == -1:
-        sys.exit()
-
-    return index
-
 # TODO Only select editable playlists
 def getPlaylists(sp, onlyEditable=True):
     return sp.current_user_playlists(limit=50)
@@ -61,3 +52,6 @@ def run():
                                 playlists_names, rofi_args=rofi_args)
         target_playlist_id = playlists['items'][index]['id']
         results = sp.user_playlist_add_tracks(username, target_playlist_id, {track_id})
+
+if __name__ == '__main__':
+    run()
