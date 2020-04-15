@@ -2,7 +2,8 @@
 
 import argparse
 import os
-import sys
+import appdirs
+import configparser
 
 import spotipy
 import spotipy.util as util
@@ -19,6 +20,34 @@ parser.add_argument('-r', '--args', nargs=argparse.REMAINDER, help='Command line
 
 args = parser.parse_args()
 
+def load_config():
+    config_dir = appdirs.user_config_dir('rofi-spotify')
+    config_path = os.path.join(config_dir, 'rofi-spotify.conf')
+
+    if os.path.exists(config_path):
+        config = configparser.ConfigParser()
+        config.read(config_path)
+        os.environ["SPOTIPY_CLIENT_ID"] = config['spotipy']['client_id']
+        os.environ["SPOTIPY_CLIENT_SECRET"] = config['spotipy']['client_secret']
+        os.environ["SPOTIFY_USERNAME"] = config['spotify']['spotify_username']
+
+    else:
+        print("No config file found, let's create one...")
+        print("Please visit https://developer.spotify.com/dashboard/applications and click on \"Create a client id\".")
+        print("Enter arbitrary name and description and select appropriate options in the next steps.")
+        print("Click on \"Edit Settings\" and add an arbitrary Redirect URI, for instance http://127.0.0.1")
+        config = configparser.ConfigParser()
+
+        config['spotipy'] = {}
+        config['spotipy']['client_id'] = str(input("Please enter the Client ID you received after the previous step."))
+        config['spotipy']['client_secret'] = str(input("Please enter the Client Secret you received after the previous step."))
+
+        config['spotify'] = {}
+        config['spotify']['spotify_username'] = str(input("Please enter your Spotify username."))
+
+        with open(config_path, 'w') as configfile:
+            config.write(configfile)
+
 # TODO Only select editable playlists
 def getPlaylists(sp, onlyEditable=True):
     return sp.current_user_playlists(limit=50)
@@ -32,13 +61,14 @@ def getArtistTitleForID(sp, track_id):
     return meta_track['artists'][0]['name'], meta_track['name']
 
 def run():
+    load_config()
     rofi = Rofi()
 
     rofi_args = args.args or []
     if not args.case_sensitive:
         rofi_args = rofi_args.append('-i')
-    
-    username = os.environ.get("ROFI_SPOTIFY_USERNAME")
+
+    username = os.environ(["SPOTIFY_USERNAME"])
     scope = "user-library-read user-read-currently-playing user-read-playback-state user-library-modify playlist-modify-private playlist-read-private playlist-modify-public playlist-read-collaborative"
     token = util.prompt_for_user_token(username, scope)
     sp = spotipy.Spotify(token)
