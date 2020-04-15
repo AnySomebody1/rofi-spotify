@@ -52,6 +52,3 @@ def run():
                                 playlists_names, rofi_args=rofi_args)
         target_playlist_id = playlists['items'][index]['id']
         results = sp.user_playlist_add_tracks(username, target_playlist_id, {track_id})
-
-if __name__ == '__main__':
-    run()
