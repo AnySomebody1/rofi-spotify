@@ -80,7 +80,7 @@ def run():
     username = os.getenv("SPOTIFY_USERNAME")
     scope = "user-library-read user-read-currently-playing user-read-playback-state user-library-modify " \
             "playlist-modify-private playlist-read-private playlist-modify-public playlist-read-collaborative"
-    token = util.prompt_for_user_token(username, scope=scope, cache-path=config_dir)
+    token = util.prompt_for_user_token(username, scope=scope, cache_path=config_dir)
     sp = spotipy.Spotify(token)
 
     if args.add_to_playlist:
