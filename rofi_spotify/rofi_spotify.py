@@ -39,7 +39,7 @@ def load_config():
         print("Please visit https://developer.spotify.com/dashboard/applications and click on \"Create a client id\".")
         print("Enter arbitrary name and description and select appropriate options in the next steps.")
         print("Click on \"Edit Settings\" and add an arbitrary Redirect URI, for instance http://127.0.0.1/ by entering"
-              "it, clicking on \"Add\" and finally on \"Save Settings\" below.")
+              " it, clicking on \"Add\" and finally on \"Save Settings\" below.")
 
         config = configparser.ConfigParser()
         config['spotipy'] = {}
@@ -55,6 +55,7 @@ def load_config():
         with open(config_path, 'w') as configfile:
             config.write(configfile)
         load_config()
+    return config_dir
 
 # TODO Only select editable playlists
 def getPlaylists(sp, onlyEditable=True):
@@ -69,7 +70,7 @@ def getArtistTitleForID(sp, track_id):
     return meta_track['artists'][0]['name'], meta_track['name']
 
 def run():
-    load_config()
+    config_dir = load_config()
     rofi = Rofi()
 
     rofi_args = args.args or []
@@ -79,7 +80,7 @@ def run():
     username = os.getenv("SPOTIFY_USERNAME")
     scope = "user-library-read user-read-currently-playing user-read-playback-state user-library-modify " \
             "playlist-modify-private playlist-read-private playlist-modify-public playlist-read-collaborative"
-    token = util.prompt_for_user_token(username, scope)
+    token = util.prompt_for_user_token(username, scope=scope, cache-path=config_dir)
     sp = spotipy.Spotify(token)
 
     if args.add_to_playlist:
@@ -98,6 +99,6 @@ def run():
     index, key = rofi.select("Currently playing: " + track_artists + "-" + track_name + " - what do you want to do?",
                              ['Add current song to playlist'], rofi_args=rofi_args)
     if index == 0:
-        subprocess.run(["rofi-spotify", "-a"])
+        subprocess.run(["rofi-spotify", "-a" + rofi_args])
     sys.exit(0)
 
