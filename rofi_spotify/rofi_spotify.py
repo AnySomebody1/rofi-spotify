@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
 import argparse
-import os
-import appdirs
 import configparser
+import os
+import subprocess
+import sys
 
+import appdirs
 import spotipy
 import spotipy.util as util
-
 from rofi import Rofi
 
 parser = argparse.ArgumentParser()
@@ -37,16 +38,17 @@ def load_config():
         print("No config file found, let's create one...")
         print("Please visit https://developer.spotify.com/dashboard/applications and click on \"Create a client id\".")
         print("Enter arbitrary name and description and select appropriate options in the next steps.")
-        print("Click on \"Edit Settings\" and add an arbitrary Redirect URI, for instance http://127.0.0.1")
-        config = configparser.ConfigParser()
+        print("Click on \"Edit Settings\" and add an arbitrary Redirect URI, for instance http://127.0.0.1/ by entering"
+              "it, clicking on \"Add\" and finally on \"Save Settings\" below.")
 
+        config = configparser.ConfigParser()
         config['spotipy'] = {}
-        config['spotipy']['client_id'] = str(input("Please enter the Client ID you received after the previous step."))
-        config['spotipy']['client_secret'] = str(input("Please enter the Client Secret you received after the previous step."))
-        config['spotipy']['redirect_uri'] = str(input("Please enter the Redirect URI you added."))
+        config['spotipy']['client_id'] = str(input("Please enter the Client ID you received after the previous step: "))
+        config['spotipy']['client_secret'] = str(input("Please enter the Client Secret you received after the previous step: "))
+        config['spotipy']['redirect_uri'] = str(input("Please enter the Redirect URI you added: "))
 
         config['spotify'] = {}
-        config['spotify']['spotify_username'] = str(input("Please enter your Spotify username."))
+        config['spotify']['spotify_username'] = str(input("Please enter your Spotify username. "))
 
         if not os.path.exists(config_dir):
             os.mkdir(config_dir)
@@ -74,8 +76,9 @@ def run():
     if not args.case_sensitive:
         rofi_args = rofi_args.append('-i')
 
-    username = os.getenv('SPOTIFY_USERNAME')
-    scope = "user-library-read user-read-currently-playing user-read-playback-state user-library-modify playlist-modify-private playlist-read-private playlist-modify-public playlist-read-collaborative"
+    username = os.getenv("SPOTIFY_USERNAME")
+    scope = "user-library-read user-read-currently-playing user-read-playback-state user-library-modify " \
+            "playlist-modify-private playlist-read-private playlist-modify-public playlist-read-collaborative"
     token = util.prompt_for_user_token(username, scope)
     sp = spotipy.Spotify(token)
 
@@ -88,3 +91,13 @@ def run():
                                 playlists_names, rofi_args=rofi_args)
         target_playlist_id = playlists['items'][index]['id']
         results = sp.user_playlist_add_tracks(username, target_playlist_id, {track_id})
+        sys.exit(0)
+
+    track_id = getCurrentTrackID(sp)
+    track_artists, track_name = getArtistTitleForID(sp, track_id)
+    index, key = rofi.select("Currently playing: " + track_artists + "-" + track_name + " - what do you want to do?",
+                             ['Add current song to playlist'], rofi_args=rofi_args)
+    if index == 0:
+        subprocess.run(["rofi-spotify", "-a"])
+    sys.exit(0)
+
