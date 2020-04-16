@@ -31,7 +31,6 @@ def load_config():
         os.environ["SPOTIPY_CLIENT_ID"] = config['spotipy']['client_id']
         os.environ["SPOTIPY_CLIENT_SECRET"] = config['spotipy']['client_secret']
         os.environ["SPOTIPY_REDIRECT_URI"] = config['spotipy']['redirect_uri']
-
         os.environ["SPOTIFY_USERNAME"] = config['spotify']['spotify_username']
 
     else:
@@ -80,7 +79,7 @@ def run():
     username = os.getenv("SPOTIFY_USERNAME")
     scope = "user-library-read user-read-currently-playing user-read-playback-state user-library-modify " \
             "playlist-modify-private playlist-read-private playlist-modify-public playlist-read-collaborative"
-    token = util.prompt_for_user_token(username, scope=scope, cache_path=config_dir)
+    token = util.prompt_for_user_token(username, scope=scope, cache_path=config_dir + "/token")
     sp = spotipy.Spotify(token)
 
     if args.add_to_playlist:
