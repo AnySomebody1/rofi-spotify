@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-
+# TODO Catch errors
 import argparse
 import configparser
 import os
 import subprocess
 import sys
+import textwrap
 
 import appdirs
 import spotipy
@@ -35,10 +36,11 @@ def load_config():
 
     else:
         print("No config file found, let's create one...")
-        print("Please visit https://developer.spotify.com/dashboard/applications and click on \"Create a client id\".")
-        print("Enter arbitrary name and description and select appropriate options in the next steps.")
-        print("Click on \"Edit Settings\" and add an arbitrary Redirect URI, for instance http://127.0.0.1/ by entering"
-              " it, clicking on \"Add\" and finally on \"Save Settings\" below.")
+        print(textwrap.wrap("Please visit https://developer.spotify.com/dashboard/applications and click on"
+                            " \"Create a client id\".", width=70))
+        print(textwrap.wrap("Enter arbitrary name and description and select appropriate options in the next steps.", width=70))
+        print(textwrap.wrap("Click on \"Edit Settings\" and add an arbitrary Redirect URI, for instance http://localhost:8080 by entering"
+              " it, clicking on \"Add\" and finally on \"Save Settings\" below.", width=70))
 
         config = configparser.ConfigParser()
         config['spotipy'] = {}
@@ -70,11 +72,11 @@ def getArtistTitleForID(sp, track_id):
 
 def run():
     config_dir = load_config()
-    rofi = Rofi()
 
     rofi_args = args.args or []
     if not args.case_sensitive:
         rofi_args = rofi_args.append('-i')
+    rofi = Rofi(rofi_args=rofi_args)
 
     username = os.getenv("SPOTIFY_USERNAME")
     scope = "user-library-read user-read-currently-playing user-read-playback-state user-library-modify " \
@@ -88,7 +90,7 @@ def run():
         playlists = getPlaylists(sp)
         playlists_names = [d['name'] for d in playlists['items']]
         index, key = rofi.select("To which playlist do you want to add " + track_artists + "-" +  track_name + "?",
-                                playlists_names, rofi_args=rofi_args)
+                                playlists_names)
         target_playlist_id = playlists['items'][index]['id']
         results = sp.user_playlist_add_tracks(username, target_playlist_id, {track_id})
         sys.exit(0)
