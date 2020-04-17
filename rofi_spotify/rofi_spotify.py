@@ -57,22 +57,14 @@ def run():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--add-to-playlist", action="store_true", help="Add current track to a playlist")
-
     parser.add_argument('-i', '--case-sensitive', action='store_true', help='Enable case sensitivity')
-
     parser.add_argument('-r', '--args', nargs=argparse.REMAINDER, help='Command line arguments for rofi. '                                                                   'Separate each argument with a space.')
-
     args = parser.parse_args()
 
     rofi_args = args.args or []
-
     if not args.case_sensitive:
-        if rofi_args:
-            casesensitive_arg = '-i, '
-        else:
-            casesensitive_arg = '-i'
-        rofi_args = casesensitive_arg + rofi_args
-    rofi = Rofi(rofi_args=rofi_args)
+        rofi_args = rofi_args.append('-i')
+    rofi = Rofi(rofi_args)
 
     scope = "user-library-read user-read-currently-playing user-read-playback-state user-library-modify " \
             "playlist-modify-private playlist-read-private playlist-modify-public"
@@ -103,3 +95,4 @@ def run():
         subprocess.run(["rofi-spotify", "-a" + rofi_args])
     sys.exit(0)
 
+run()
