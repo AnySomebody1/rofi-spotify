@@ -18,11 +18,6 @@ def load_config():
     if os.path.exists(config_path):
         config = configparser.ConfigParser()
         config.read(config_path)
-#        os.environ["SPOTIPY_CLIENT_ID"] = config['spotipy']['client_id']
-#        os.environ["SPOTIPY_CLIENT_SECRET"] = config['spotipy']['client_secret']
-#        os.environ["SPOTIPY_REDIRECT_URI"] = config['spotipy']['redirect_uri']
-#        os.environ["SPOTIFY_USERNAME"] = config['spotify']['spotify_username']
-
     else:
         print("No config file found, let's create one...")
         print(textwrap.wrap("Please visit https://developer.spotify.com/dashboard/applications and click on"
@@ -70,8 +65,13 @@ def run():
     args = parser.parse_args()
 
     rofi_args = args.args or []
+
     if not args.case_sensitive:
-        rofi_args = rofi_args.append('-i')
+        if rofi_args:
+            casesensitive_arg = '-i, '
+        else:
+            casesensitive_arg = '-i'
+        rofi_args = casesensitive_arg + rofi_args
     rofi = Rofi(rofi_args=rofi_args)
 
     scope = "user-library-read user-read-currently-playing user-read-playback-state user-library-modify " \
