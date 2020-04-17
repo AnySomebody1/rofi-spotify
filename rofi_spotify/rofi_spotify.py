@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # TODO Catch errors
 import argparse
 import configparser
@@ -12,16 +11,6 @@ import spotipy
 import spotipy.util as util
 from rofi import Rofi
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-a", "--add-to-playlist", action="store_true", help="Add current track to a playlist")
-
-parser.add_argument('-i', '--case-sensitive', action='store_true', help='Enable case sensitivity')
-
-parser.add_argument('-r', '--args', nargs=argparse.REMAINDER, help='Command line arguments for rofi. '
-                                                                   'Separate each argument with a space.')
-
-args = parser.parse_args()
-
 def load_config():
     config_dir = appdirs.user_config_dir('rofi-spotify')
     config_path = os.path.join(config_dir, 'rofi-spotify.conf')
@@ -29,10 +18,10 @@ def load_config():
     if os.path.exists(config_path):
         config = configparser.ConfigParser()
         config.read(config_path)
-        os.environ["SPOTIPY_CLIENT_ID"] = config['spotipy']['client_id']
-        os.environ["SPOTIPY_CLIENT_SECRET"] = config['spotipy']['client_secret']
-        os.environ["SPOTIPY_REDIRECT_URI"] = config['spotipy']['redirect_uri']
-        os.environ["SPOTIFY_USERNAME"] = config['spotify']['spotify_username']
+#        os.environ["SPOTIPY_CLIENT_ID"] = config['spotipy']['client_id']
+#        os.environ["SPOTIPY_CLIENT_SECRET"] = config['spotipy']['client_secret']
+#        os.environ["SPOTIPY_REDIRECT_URI"] = config['spotipy']['redirect_uri']
+#        os.environ["SPOTIFY_USERNAME"] = config['spotify']['spotify_username']
 
     else:
         print("No config file found, let's create one...")
@@ -55,10 +44,8 @@ def load_config():
             os.mkdir(config_dir)
         with open(config_path, 'w') as configfile:
             config.write(configfile)
-        load_config()
-    return config_dir
+    return config, config_dir
 
-# TODO Only select editable playlists
 def getPlaylists(sp, onlyEditable=True):
     return sp.current_user_playlists(limit=50)
 
@@ -71,17 +58,30 @@ def getArtistTitleForID(sp, track_id):
     return meta_track['artists'][0]['name'], meta_track['name']
 
 def run():
-    config_dir = load_config()
+    config, config_dir = load_config()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-a", "--add-to-playlist", action="store_true", help="Add current track to a playlist")
+
+    parser.add_argument('-i', '--case-sensitive', action='store_true', help='Enable case sensitivity')
+
+    parser.add_argument('-r', '--args', nargs=argparse.REMAINDER, help='Command line arguments for rofi. '                                                                   'Separate each argument with a space.')
+
+    args = parser.parse_args()
 
     rofi_args = args.args or []
     if not args.case_sensitive:
         rofi_args = rofi_args.append('-i')
     rofi = Rofi(rofi_args=rofi_args)
 
-    username = os.getenv("SPOTIFY_USERNAME")
     scope = "user-library-read user-read-currently-playing user-read-playback-state user-library-modify " \
-            "playlist-modify-private playlist-read-private playlist-modify-public playlist-read-collaborative"
-    token = util.prompt_for_user_token(username, scope=scope, cache_path=config_dir + "/token")
+            "playlist-modify-private playlist-read-private playlist-modify-public"
+    token = util.prompt_for_user_token(config['spotify']['spotify_username'],
+                                       scope=scope,
+                                       client_id=config['spotipy']['client_id'],
+                                       client_secret=config['spotipy']['client_secret'],
+                                       redirect_uri=config['spotipy']['redirect_uri'],
+                                       cache_path=(config_dir + "/token"))
     sp = spotipy.Spotify(token)
 
     if args.add_to_playlist:
@@ -92,7 +92,7 @@ def run():
         index, key = rofi.select("To which playlist do you want to add " + track_artists + "-" +  track_name + "?",
                                 playlists_names)
         target_playlist_id = playlists['items'][index]['id']
-        results = sp.user_playlist_add_tracks(username, target_playlist_id, {track_id})
+        results = sp.user_playlist_add_tracks(config['spotify']['spotify_username'], target_playlist_id, {track_id})
         sys.exit(0)
 
     track_id = getCurrentTrackID(sp)
