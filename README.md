@@ -8,7 +8,7 @@
 You can install the [pypi](https://pypi.org/project/rofi-spotify/) package using `pip3 install rofi-spotify`. 
 
 Make sure wherever it is installed to is on your path. You can check with `pip3 show rofi-spotify`.
-->
+-->
 
 ### Arch Linux
 
