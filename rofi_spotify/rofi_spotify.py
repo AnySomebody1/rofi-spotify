@@ -63,7 +63,7 @@ def run():
 
     rofi_args = args.args or []
     if not args.case_sensitive:
-        rofi_args = rofi_args.append('-i')
+        rofi_args.append('-i')
     rofi = Rofi(rofi_args)
 
     scope = "user-library-read user-read-currently-playing user-read-playback-state user-library-modify " \
@@ -90,9 +90,11 @@ def run():
     track_id = getCurrentTrackID(sp)
     track_artists, track_name = getArtistTitleForID(sp, track_id)
     index, key = rofi.select("Currently playing: " + track_artists + "-" + track_name + " - what do you want to do?",
-                             ['Add current song to playlist'], rofi_args=rofi_args)
+                             ['Add current song to playlist'])
     if index == 0:
-        subprocess.run(["rofi-spotify", "-a" + rofi_args])
+        rofi_args = args.args or []
+        rofi_args.append('-a')
+        subprocess.run(["rofi-spotify", ', '.join(rofi_args)])
     sys.exit(0)
 
 run()
