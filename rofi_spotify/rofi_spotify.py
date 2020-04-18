@@ -64,7 +64,7 @@ def run():
     rofi_args = args.args or []
     if not args.case_sensitive:
         rofi_args.append('-i')
-    rofi = Rofi(rofi_args)
+    rofi = Rofi()
 
     scope = "user-library-read user-read-currently-playing user-read-playback-state user-library-modify " \
             "playlist-modify-private playlist-read-private playlist-modify-public"
@@ -82,7 +82,7 @@ def run():
         playlists = getPlaylists(sp)
         playlists_names = [d['name'] for d in playlists['items']]
         index, key = rofi.select("To which playlist do you want to add " + track_artists + "-" +  track_name + "?",
-                                playlists_names)
+                                playlists_names, rofi_args=rofi_args)
         target_playlist_id = playlists['items'][index]['id']
         results = sp.user_playlist_add_tracks(config['spotify']['spotify_username'], target_playlist_id, {track_id})
         sys.exit(0)
