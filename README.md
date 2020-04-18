@@ -29,7 +29,8 @@ chmod +x bin/rofi-spotify
 
 ## Setup
 
-On first run setup should automatically tell you what to do in order to register your app on the Spotify developer page.
+On first run the script should automatically tell you what to do in order to register your app on the Spotify developer 
+page and create a configuration file.
 
 ## Usage
 
