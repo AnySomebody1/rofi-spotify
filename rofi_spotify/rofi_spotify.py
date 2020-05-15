@@ -159,7 +159,7 @@ def run():
 
         sys.exit(0)
 
-    curr_track_meta, curr_track_id = getCurrentTrack(sp)
+    curr_track_id, curr_track_meta = getCurrentTrack(sp)
     index, key = rofi.select("Currently playing: " + curr_track_meta + " | What do you want to do? ",
                              ["Add current song to playlist", "Search for track"])
     if index == 0:
