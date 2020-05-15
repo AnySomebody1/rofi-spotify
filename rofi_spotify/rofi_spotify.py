@@ -75,7 +75,6 @@ def getArtistsTitleForID(sp, track_id):
     return artists, meta_track['name']
 
 def addTrackToPlaylist(rofi, rofi_args, sp, username, playlist_id, playlist_name, track_id, track_name):
-
     playlist_tracks_tmp = sp.playlist_tracks(playlist_id,  fields="total,items(track(id))",
                                              additional_types=('track',))
     playlist_tracks = playlist_tracks_tmp
@@ -144,7 +143,7 @@ def run():
             rofi_tracks = [d['artists']+"-" + d['title'] for d in tracks]
             index_track, key_track = rofi.select("Select a track: ", rofi_tracks)
             index_todo, key_todo = rofi.select("What do you want to do with " + rofi_tracks[index_track] + "? ",
-                                               ["Add to queue", "Add to playlist"])
+                                               ["Add to queue", "Add to playlist"], rofi_args=rofi_args)
 
             if index_todo == 0:
                 sp.add_to_queue(tracks[index_track]['id'])
@@ -161,7 +160,7 @@ def run():
 
     curr_track_id, curr_track_meta = getCurrentTrack(sp)
     index, key = rofi.select("Currently playing: " + curr_track_meta + " | What do you want to do? ",
-                             ["Add current song to playlist", "Search for track"])
+                             ["Add current song to playlist", "Search for track"], rofi_args=rofi_args)
     if index == 0:
         rofi_args = args.args or []
         rofi_args.append('-a')
