@@ -62,7 +62,7 @@ def getCurrentTrack(sp):
         track_meta = track_artists + "-" + track_name
     except Exception:
         track_meta = "Nothing"
-    return track_meta, track_id
+    return track_id, track_meta
 
 def getArtistsTitleForID(sp, track_id):
     meta_track = sp.track(track_id)
