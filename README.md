@@ -55,6 +55,7 @@ By default, the different possible options are shown.
 |--------|-------------------|-------------------------------------------------------------|---------------------------------------|
 | -h     | --help            | Shows CLI help and exits                                    | -                                     |
 | -a     | --add-to-playlist | Add current track to a playlist                             | -                                  |
+| -st     | --search-track   | Search for a track                                          | -                                  |
 | -i     | --case-sensitive  | Enable case sensitivity                                     | False                                 |
 | -r ... | --args ...        | Command line arguments for rofi. Separate each argument with a space.        | -                                 |
 
