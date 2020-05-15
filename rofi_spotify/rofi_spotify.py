@@ -171,4 +171,3 @@ def run():
         rofi_args.append('-st')
         subprocess.run(["rofi-spotify", ', '.join(rofi_args)])
     sys.exit(0)
-run()
