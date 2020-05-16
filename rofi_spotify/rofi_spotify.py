@@ -145,7 +145,7 @@ def run():
                 tracks.append({'id': track['id'], 'artists': getArtistsTitleForID(sp, track['id'])[0],
                                'title': track['name'], 'uri': track['uri']})
             rofi_tracks = [d['artists']+"-" + d['title'] for d in tracks]
-            index_track, key_track = rofi.select("Select a track: ", rofi_tracks)
+            index_track, key_track = rofi.select("Select a track: ", rofi_tracks, rofi_args=rofi_args)
             index_todo, key_todo = rofi.select("What do you want to do with " + rofi_tracks[index_track] + "? ",
                                                ["Add to queue", "Add to playlist", "Play"], rofi_args=rofi_args)
 
