@@ -9,6 +9,7 @@ import os
 import subprocess
 import sys
 import textwrap
+import time
 
 import appdirs
 import spotipy
@@ -128,6 +129,9 @@ def run():
         target_playlist_id = playlists['items'][index]['id']
         addTrackToPlaylist(rofi, rofi_args, sp, config['spotify']['spotify_username'], target_playlist_id,
                            playlists_names[index], track_id, track_meta)
+        rofi.status(track_meta + " added to " + playlists_names[index] +".", rofi_args=rofi_args)
+        time.sleep(2)
+        rofi.close()
         sys.exit(0)
 
     if args.search_track:
@@ -139,14 +143,18 @@ def run():
             tracks = []
             for index, track in enumerate(results['tracks']['items']):
                 tracks.append({'id': track['id'], 'artists': getArtistsTitleForID(sp, track['id'])[0],
-                               'title': track['name']})
+                               'title': track['name'], 'uri': track['uri']})
             rofi_tracks = [d['artists']+"-" + d['title'] for d in tracks]
             index_track, key_track = rofi.select("Select a track: ", rofi_tracks)
             index_todo, key_todo = rofi.select("What do you want to do with " + rofi_tracks[index_track] + "? ",
-                                               ["Add to queue", "Add to playlist"], rofi_args=rofi_args)
+                                               ["Add to queue", "Add to playlist", "Play"], rofi_args=rofi_args)
 
             if index_todo == 0:
                 sp.add_to_queue(tracks[index_track]['id'])
+                rofi.status(rofi_tracks[index_track] + " added to queue.", rofi_args=rofi_args)
+                time.sleep(2)
+                rofi.close()
+
             if index_todo == 1:
                 playlists = getPlaylists(sp)
                 playlists_names = [d['name'] for d in playlists['items']]
@@ -155,6 +163,15 @@ def run():
                 target_playlist_id = playlists['items'][index_playlist]['id']
                 addTrackToPlaylist(rofi, rofi_args, sp, config['spotify']['spotify_username'], target_playlist_id,
                                    playlists_names[index_playlist], tracks[index_track]['id'], rofi_tracks[index_track])
+                rofi.status(rofi_tracks[index_track] + " added to " + playlists_names[index_playlist] + ".", rofi_args=rofi_args)
+                time.sleep(2)
+                rofi.close()
+
+            if index_todo == 2:
+                sp.start_playback(uris=[tracks[index_track]['uri']])
+                rofi.status("Playing " + rofi_tracks[index_track] + ".", rofi_args=rofi_args)
+                time.sleep(2)
+                rofi.close()
 
         sys.exit(0)
 
