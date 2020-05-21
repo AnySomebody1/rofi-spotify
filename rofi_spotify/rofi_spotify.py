@@ -87,10 +87,12 @@ def addTrackToPlaylist(rofi, rofi_args, sp, username, playlist_id, playlist_name
         playlist_tracks.append(playlist_tracks_tmp)
     playlist_ids = [d['track']['id'] for d in playlist_tracks['items']]
     if track_id in playlist_ids:
-        index_add, key_add = rofi.select(track_name + " is already in " + playlist_name
+        index, key = rofi.select(track_name + " is already in " + playlist_name
                                          + ". Add anyway? ", ["No", "Yes"], rofi_args=rofi_args)
-        if index_add == 0:
-            return
+        if index == -1:
+            sys.exit(0)
+        if index == 0:
+            return 0
         else:
             results = sp.user_playlist_add_tracks(username, playlist_id,  {track_id})
     results = sp.user_playlist_add_tracks(username, playlist_id, {track_id})
@@ -146,8 +148,12 @@ def run():
                                'title': track['name'], 'uri': track['uri']})
             rofi_tracks = [d['artists']+"-" + d['title'] for d in tracks]
             index_track, key_track = rofi.select("Select a track: ", rofi_tracks, rofi_args=rofi_args)
+            if key_track == -1:
+                sys.exit(0)
             index_todo, key_todo = rofi.select("What do you want to do with " + rofi_tracks[index_track] + "? ",
                                                ["Add to queue", "Add to playlist", "Play"], rofi_args=rofi_args)
+            if key_todo == -1:
+                sys.exit(0)
 
             if index_todo == 0:
                 sp.add_to_queue(tracks[index_track]['id'])
@@ -160,12 +166,15 @@ def run():
                 playlists_names = [d['name'] for d in playlists['items']]
                 index_playlist, key_playlist = rofi.select("To which playlist do you want to add " + rofi_tracks[index_track] + "? ",
                                                            playlists_names, rofi_args=rofi_args)
+                if key_playlist == -1:
+                    sys.exit(0)
                 target_playlist_id = playlists['items'][index_playlist]['id']
-                addTrackToPlaylist(rofi, rofi_args, sp, config['spotify']['spotify_username'], target_playlist_id,
+                result = addTrackToPlaylist(rofi, rofi_args, sp, config['spotify']['spotify_username'], target_playlist_id,
                                    playlists_names[index_playlist], tracks[index_track]['id'], rofi_tracks[index_track])
-                rofi.status(rofi_tracks[index_track] + " added to " + playlists_names[index_playlist] + ".", rofi_args=rofi_args)
-                time.sleep(2)
-                rofi.close()
+                if not result == 0:
+                    rofi.status(rofi_tracks[index_track] + " added to " + playlists_names[index_playlist] + ".", rofi_args=rofi_args)
+                    time.sleep(2)
+                    rofi.close()
 
             if index_todo == 2:
                 sp.start_playback(uris=[tracks[index_track]['uri']])
