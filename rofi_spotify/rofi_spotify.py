@@ -62,6 +62,7 @@ def getCurrentTrack(sp):
         track_artists, track_name = getArtistsTitleForID(sp, track_id)
         track_meta = track_artists + "-" + track_name
     except Exception:
+        track_id = None
         track_meta = "Nothing"
     return track_id, track_meta
 
@@ -128,6 +129,8 @@ def run():
         playlists_names = [d['name'] for d in playlists['items']]
         index, key = rofi.select("To which playlist do you want to add " + track_meta + "? ",
                                 playlists_names, rofi_args=rofi_args)
+        if key == -1:
+            sys.exit(0)
         target_playlist_id = playlists['items'][index]['id']
         addTrackToPlaylist(rofi, rofi_args, sp, config['spotify']['spotify_username'], target_playlist_id,
                            playlists_names[index], track_id, track_meta)
