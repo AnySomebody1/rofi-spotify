@@ -93,10 +93,11 @@ def addTrackToPlaylist(rofi, rofi_args, sp, username, playlist_id, playlist_name
         if index == -1:
             sys.exit(0)
         if index == 0:
-            return 0
-        else:
-            results = sp.user_playlist_add_tracks(username, playlist_id,  {track_id})
+            sys.exit()
     results = sp.user_playlist_add_tracks(username, playlist_id, {track_id})
+    rofi.status(track_name + " added to " + playlist_name + ".", rofi_args=rofi_args)
+    time.sleep(2)
+    rofi.close()
 
 def run():
     config, config_dir = load_config()
@@ -134,16 +135,15 @@ def run():
         target_playlist_id = playlists['items'][index]['id']
         addTrackToPlaylist(rofi, rofi_args, sp, config['spotify']['spotify_username'], target_playlist_id,
                            playlists_names[index], track_id, track_meta)
-        rofi.status(track_meta + " added to " + playlists_names[index] +".", rofi_args=rofi_args)
-        time.sleep(2)
-        rofi.close()
         sys.exit(0)
 
     if args.search_track:
         trackquery = rofi.text_entry('Search for a track: ', rofi_args=rofi_args)
         results = sp.search(trackquery, limit=50, type="track")
         if not results['tracks']['items']:
-            rofi.error("No tracks found.")
+            rofi.status("No tracks found.", rofi_args=rofi_args)
+            time.sleep(2)
+            rofi.close()
         else:
             tracks = []
             for index, track in enumerate(results['tracks']['items']):
@@ -167,8 +167,8 @@ def run():
             if index_todo == 1:
                 playlists = getPlaylists(sp)
                 playlists_names = [d['name'] for d in playlists['items']]
-                index_playlist, key_playlist = rofi.select("To which playlist do you want to add " + rofi_tracks[index_track] + "? ",
-                                                           playlists_names, rofi_args=rofi_args)
+                index_playlist, key_playlist = rofi.select("To which playlist do you want to add "
+                                                           + rofi_tracks[index_track] + "? ", playlists_names, rofi_args=rofi_args)
                 if key_playlist == -1:
                     sys.exit(0)
                 target_playlist_id = playlists['items'][index_playlist]['id']
