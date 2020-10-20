@@ -1,7 +1,5 @@
 # TODO Catch errors
-# TODO Get only editable playlists
 # TODO Try catch errors
-# TODO Get all playlists
 
 import argparse
 import configparser
@@ -51,8 +49,18 @@ def load_config():
     return config, config_dir
 
 
-def getPlaylists(sp, onlyEditable=True):
-    return sp.current_user_playlists(limit=50)
+def getPlaylists(sp, onlyEditable=True, username=''):
+    playlists_tmp = sp.current_user_playlists(limit=50)
+    playlists = playlists_tmp
+    offset = 50
+    while offset < playlists['total']:
+        playlists_tmp = sp.current_user_playlists(limit=50, offset=offset)
+        offset += 50
+        playlists['items'].extend(playlists_tmp['items'])
+    if onlyEditable:
+        playlists['items'] = [playlist for playlist in playlists['items']
+                              if (playlist['owner']['display_name'] == username or playlist['collaborative'])]
+    return playlists
 
 
 def getCurrentTrackID(sp):
@@ -129,14 +137,13 @@ def run():
     scope = "user-library-read user-read-currently-playing user-read-playback-state user-library-modify " \
             "user-modify-playback-state playlist-modify-private playlist-read-private playlist-modify-public"
     sp = spotipy.Spotify(auth_manager=spotipy.oauth2.SpotifyOAuth(client_id=config['spotipy']['client_id'],
-                                                   client_secret=config['spotipy']['client_secret'],
-                                                   redirect_uri=config['spotipy']['redirect_uri'],
-                                                   scope=scope,
-                                                   cache_path=(config_dir + "/token")))
+                                                                  client_secret=config['spotipy']['client_secret'],
+                                                                  redirect_uri=config['spotipy']['redirect_uri'],
+                                                                  scope=scope, cache_path=(config_dir + "/token")))
 
     if args.add_to_playlist:
         track_id, track_meta = getCurrentTrack(sp)
-        playlists = getPlaylists(sp)
+        playlists = getPlaylists(sp, onlyEditable=True, username=config['spotify']['spotify_username'])
         playlists_names = [d['name'] for d in playlists['items']]
         index, key = rofi.select("To which playlist do you want to add " + track_meta + "? ",
                                  playlists_names, rofi_args=rofi_args)
@@ -212,4 +219,6 @@ def run():
         rofi_args.append('-st')
         subprocess.run(["rofi-spotify", ', '.join(rofi_args)])
     sys.exit(0)
+
+
 run()
