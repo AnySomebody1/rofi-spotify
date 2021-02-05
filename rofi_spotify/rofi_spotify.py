@@ -75,7 +75,7 @@ def getCurrentTrack(sp):
     try:
         track_id = getCurrentTrackID(sp)
         track_artists, track_name = getArtistsTitleForID(sp, track_id)
-        track_meta = track_artists + "-" + track_name
+        track_meta = track_artists + " - " + track_name
     except Exception("Nothing playing"):
         track_id = None
         track_meta = "Nothing"
@@ -166,7 +166,7 @@ def run():
             for index, track in enumerate(results['tracks']['items']):
                 tracks.append({'id': track['id'], 'artists': getArtistsTitleForID(sp, track['id'])[0],
                                'title': track['name'], 'uri': track['uri']})
-            rofi_tracks = [d['artists']+"-" + d['title'] for d in tracks]
+            rofi_tracks = [d['artists'] + " - " + d['title'] for d in tracks]
             index_track, key_track = rofi.select("Select a track: ", rofi_tracks, rofi_args=rofi_args)
             if key_track == -1:
                 sys.exit(0)
