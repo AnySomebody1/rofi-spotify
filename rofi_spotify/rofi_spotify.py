@@ -40,7 +40,7 @@ def load_config():
         config['spotipy']['redirect_uri'] = str(input("Please enter the Redirect URI you added: "))
 
         config['spotify'] = {}
-        config['spotify']['spotify_username'] = str(input("Please enter your Spotify username. "))
+        config['spotify']['spotify_username'] = str(input("Please enter your Spotify username (needed for owned playlists search): "))
 
         if not os.path.exists(config_dir):
             os.mkdir(config_dir)
@@ -170,7 +170,7 @@ def run():
             index_track, key_track = rofi.select("Select a track: ", rofi_tracks, rofi_args=rofi_args)
             if key_track == -1:
                 sys.exit(0)
-            index_todo, key_todo = rofi.select("What do you want to do with " + rofi_tracks[index_track] + "? ",
+            index_todo, key_todo = rofi.select(rofi_tracks[index_track] + ": ",
                                                ["Add to queue", "Add to playlist", "Play"], rofi_args=rofi_args)
             if key_todo == -1:
                 sys.exit(0)
@@ -208,7 +208,7 @@ def run():
         sys.exit(0)
 
     curr_track_id, curr_track_meta = getCurrentTrack(sp)
-    index, key = rofi.select("Currently playing: " + curr_track_meta + " | What do you want to do? ",
+    index, key = rofi.select("Currently playing: " + curr_track_meta + " ",
                              ["Add current song to playlist", "Search for track"], rofi_args=rofi_args)
     if index == 0:
         rofi_args = args.args or []
