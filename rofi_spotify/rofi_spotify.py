@@ -43,7 +43,8 @@ def load_config():
         config['spotify']['spotify_username'] = str(input("Please enter your Spotify username (needed for owned playlists search): "))
 
         config['settings'] = {}
-        config['settings']['show_status_popups'] = 'true'
+        config['settings']['show_playback_popups'] = 'false'
+        config['settings']['show_add_to_playlist_popups'] = 'true'
         config['settings']['track_search_max_entries'] = '5'
 
         if not os.path.exists(config_dir):
@@ -53,7 +54,7 @@ def load_config():
     return config, config_dir
 
 
-def getPlaylists(sp, onlyEditable=True, username=''):
+def getPlaylists(sp, onlyEditable, username):
     playlists_tmp = sp.current_user_playlists(limit=50)
     playlists = playlists_tmp
     offset = 50
@@ -97,7 +98,7 @@ def getArtistsTitleForID(sp, track_id):
     return artists, meta_track['name']
 
 
-def addTrackToPlaylist(rofi, rofi_args, sp, username, playlist_id, playlist_name, track_id, track_name, show_status_popup):
+def addTrackToPlaylist(rofi, rofi_args, sp, username, playlist_id, playlist_name, track_id, track_name):
     playlist_tracks_tmp = sp.playlist_tracks(playlist_id,  fields="total,items(track(id))",
                                              additional_types=('track',))
     playlist_tracks = playlist_tracks_tmp
@@ -115,12 +116,7 @@ def addTrackToPlaylist(rofi, rofi_args, sp, username, playlist_id, playlist_name
             sys.exit(0)
         if index == 0:
             sys.exit()
-    results = sp.user_playlist_add_tracks(username, playlist_id, {track_id})
-    if show_status_popup:
-        rofi.status(track_name + " added to " + playlist_name + ".", rofi_args=rofi_args)
-        time.sleep(2)
-    rofi.close()
-    return results
+    return sp.user_playlist_add_tracks(username, playlist_id, {track_id}) 
 
 
 def run():
@@ -155,8 +151,13 @@ def run():
         if key == -1:
             sys.exit(0)
         target_playlist_id = playlists['items'][index]['id']
-        addTrackToPlaylist(rofi, rofi_args, sp, config['spotify']['spotify_username'], target_playlist_id,
-                           playlists_names[index], track_id, track_meta, config['settings'].getboolean('show_status_popups'))
+        result = addTrackToPlaylist(rofi, rofi_args, sp, config['spotify']['spotify_username'], target_playlist_id,
+                           playlists_names[index], track_id, track_meta)
+        if not result == 0:
+            if config['settings'].getboolean('show_add_to_playlist_popups'):
+                rofi.status(track_meta + " added to " + playlists_names[index] + ".", rofi_args=rofi_args)
+                time.sleep(2)
+        rofi.close()
         sys.exit(0)
 
     if args.search_track:
@@ -182,13 +183,13 @@ def run():
 
             if index_todo == 0:
                 sp.add_to_queue(tracks[index_track]['id'])
-                if config['settings'].getboolean('show_status_popups'):
+                if config['settings'].getboolean('show_playback_popups'):
                     rofi.status(rofi_tracks[index_track] + " added to queue.", rofi_args=rofi_args)
                     time.sleep(2)
                 rofi.close()
 
             if index_todo == 1:
-                playlists = getPlaylists(sp)
+                playlists = getPlaylists(sp, onlyEditable=True, username=config['spotify']['spotify_username'])
                 playlists_names = [d['name'] for d in playlists['items']]
                 index_playlist, key_playlist = rofi.select("To which playlist do you want to add "
                                                            + rofi_tracks[index_track] + "? ", playlists_names,
@@ -198,9 +199,9 @@ def run():
                 target_playlist_id = playlists['items'][index_playlist]['id']
                 result = addTrackToPlaylist(rofi, rofi_args, sp, config['spotify']['spotify_username'],
                                             target_playlist_id, playlists_names[index_playlist],
-                                            tracks[index_track]['id'], rofi_tracks[index_track], config['settings']['show_status_popups'])
+                                            tracks[index_track]['id'], rofi_tracks[index_track])
                 if not result == 0:
-                    if config['settings'].getboolean('show_status_popups'):
+                    if config['settings'].getboolean('show_add_to_playlist_popups'):
                         rofi.status(rofi_tracks[index_track] + " added to " + playlists_names[index_playlist] + ".",
                                 rofi_args=rofi_args)
                         time.sleep(2)
@@ -208,7 +209,7 @@ def run():
 
             if index_todo == 2:
                 sp.start_playback(uris=[tracks[index_track]['uri']])
-                if config['settings'].getboolean('show_status_popups'):
+                if config['settings'].getboolean('show_playback_popups'):
                     rofi.status("Playing " + rofi_tracks[index_track] + ".", rofi_args=rofi_args)
                     time.sleep(2)
                 rofi.close()
