@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='rofi_spotify',
-    version='0.0.1',
+    version='0.0.2',
     install_requires=['python-rofi', 'spotipy', 'appdirs'],
     packages=['rofi_spotify'],
     url='https://github.com/AnySomebody1/rofi-spotify',
