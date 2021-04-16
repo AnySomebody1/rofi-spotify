@@ -128,6 +128,7 @@ def run():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--add-to-playlist", action="store_true", help="Add current track to a playlist")
+    parser.add_argument("-l", "--like-current", action="store_true", help="Like current track")
     parser.add_argument("-st", "--search-track", action="store_true", help="Search for a track")
     parser.add_argument('-i', '--case-sensitive', action='store_true', help='Enable case sensitivity')
     parser.add_argument('-r', '--args', nargs=argparse.REMAINDER, help='Command line arguments for rofi. '
@@ -158,6 +159,14 @@ def run():
         addTrackToPlaylist(rofi, rofi_args, sp, config['spotify']['spotify_username'], target_playlist_id,
                            playlists_names[index], track_id, track_meta, config['settings'].getboolean('show_status_popups'))
         sys.exit(0)
+
+    if args.like_current:
+        track_id, track_meta = getCurrentTrack(sp)
+        sp.current_user_saved_tracks_add({track_id})
+        rofi.status(track_meta + " liked.", rofi_args=rofi_args)
+        time.sleep(2)
+        rofi.close()
+
 
     if args.search_track:
         trackquery = rofi.text_entry('Search for a track: ', rofi_args=rofi_args)
@@ -223,6 +232,10 @@ def run():
         rofi_args.append('-a')
         subprocess.run(["rofi-spotify", ', '.join(rofi_args)])
     if index == 1:
+        rofi_args = args.arg or []
+        rofi_args.append('-l')
+        subprocess.run(["rofi-spotify", ', '.join(rofi_args)])
+    if index == 2:
         rofi_args = args.args or []
         rofi_args.append('-st')
         subprocess.run(["rofi-spotify", ', '.join(rofi_args)])
