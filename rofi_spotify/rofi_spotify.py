@@ -40,7 +40,7 @@ def load_config():
         config['spotipy']['redirect_uri'] = str(input("Please enter the Redirect URI you added: "))
 
         config['spotify'] = {}
-        config['spotify']['spotify_username'] = str(input("Please enter your Spotify username (needed for owned playlists search): "))
+        config['spotify']['spotify_username'] = str(input("Please enter your Spotify username. "))
 
         config['settings'] = {}
         config['settings']['show_playback_popups'] = 'false'
@@ -80,7 +80,7 @@ def getCurrentTrack(sp):
     try:
         track_id = getCurrentTrackID(sp)
         track_artists, track_name = getArtistsTitleForID(sp, track_id)
-        track_meta = track_artists + " - " + track_name
+        track_meta = track_artists + "-" + track_name
     except Exception("Nothing playing"):
         track_id = None
         track_meta = "Nothing"
@@ -124,7 +124,6 @@ def run():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--add-to-playlist", action="store_true", help="Add current track to a playlist")
-    parser.add_argument("-l", "--like-current", action="store_true", help="Like current track")
     parser.add_argument("-st", "--search-track", action="store_true", help="Search for a track")
     parser.add_argument('-i', '--case-sensitive', action='store_true', help='Enable case sensitivity')
     parser.add_argument('-r', '--args', nargs=argparse.REMAINDER, help='Command line arguments for rofi. '
@@ -227,7 +226,7 @@ def run():
 
     curr_track_id, curr_track_meta = getCurrentTrack(sp)
     index, key = rofi.select("Currently playing: " + curr_track_meta + " ",
-                             ["Add current song to playlist", "Search for track"], rofi_args=rofi_args)
+                             ["Add current song to playlist", "Like current song", "Search for track"], rofi_args=rofi_args)
     if index == 0:
         rofi_args = args.args or []
         rofi_args.append('-a')
