@@ -70,7 +70,7 @@ def getPlaylists(sp, onlyEditable, username):
 def getCurrentTrackID(sp):
     current_playback = sp.current_playback()
     if not current_playback:
-        raise Exception("Nothing playing")
+        raise Exception()
     else:
         return current_playback['item']['uri'].split(":")[2]
 
@@ -80,7 +80,7 @@ def getCurrentTrack(sp):
         track_id = getCurrentTrackID(sp)
         track_artists, track_name = getArtistsTitleForID(sp, track_id)
         track_meta = track_artists + "-" + track_name
-    except Exception("Nothing playing"):
+    except Exception:
         track_id = None
         track_meta = "Nothing"
     return track_id, track_meta
