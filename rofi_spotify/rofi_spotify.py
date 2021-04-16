@@ -11,7 +11,6 @@ import time
 
 import appdirs
 import spotipy
-# import spotipy.util as util
 from rofi import Rofi
 
 
@@ -241,6 +240,5 @@ def run():
         rofi_args.append('-st')
         subprocess.run(["rofi-spotify", ', '.join(rofi_args)])
     sys.exit(0)
-
 
 run()
