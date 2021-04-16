@@ -124,6 +124,7 @@ def run():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--add-to-playlist", action="store_true", help="Add current track to a playlist")
+    parser.add_argument("-l", "--like-track", action="store_true", help="Like current track")
     parser.add_argument("-st", "--search-track", action="store_true", help="Search for a track")
     parser.add_argument('-i', '--case-sensitive', action='store_true', help='Enable case sensitivity')
     parser.add_argument('-r', '--args', nargs=argparse.REMAINDER, help='Command line arguments for rofi. '
@@ -226,7 +227,7 @@ def run():
 
     curr_track_id, curr_track_meta = getCurrentTrack(sp)
     index, key = rofi.select("Currently playing: " + curr_track_meta + " ",
-                             ["Add current song to playlist", "Like current song", "Search for track"], rofi_args=rofi_args)
+                             ["Add current song to playlist", "Like current song", "Search track"], rofi_args=rofi_args)
     if index == 0:
         rofi_args = args.args or []
         rofi_args.append('-a')
