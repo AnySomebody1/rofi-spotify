@@ -226,7 +226,7 @@ def run():
 
     curr_track_id, curr_track_meta = getCurrentTrack(sp)
     index, key = rofi.select("Currently playing: " + curr_track_meta + " ",
-                             ["Add current song to playlist", "Add current song to playlist", "Search track"], rofi_args=rofi_args)
+                             ["Add current song to playlist", "Test1", "Test2", "Search track", "Test3"], rofi_args=rofi_args)
     if index == 0:
         rofi_args = args.args or []
         rofi_args.append('-a')
