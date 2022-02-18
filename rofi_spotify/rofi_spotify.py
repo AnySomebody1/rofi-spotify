@@ -125,8 +125,8 @@ def addTrackToPlaylist(rofi, rofi_args, sp, username, playlist_id, playlist_name
 
 def findAppropriateThumbnailSource(images, lower=50, upper=500):
     images = sorted(images, key=lambda i: i["height"])
-    matching = filter(lambda i: lower <= (i.get("height") or -1) <= upper, images),
-    
+    matching = list(filter(lambda i: lower <= (i.get("height") or -1) <= upper, images))
+
     # If the condition can't be satisfied, return a middle ground
     return (matching[-1] if matching else images[int(len(images)/2)])["url"]
 
@@ -161,7 +161,10 @@ def run():
 
     if args.add_to_playlist:
         track_id, track_meta = getCurrentTrack(sp)
-        playlists = getPlaylists(sp, onlyEditable=True, username=config['spotify']['spotify_username'])
+        imageless_playlists = [] # List of playlist IDs
+        playlists = getPlaylists(
+            sp, onlyEditable=True, username=config["spotify"]["spotify_username"]
+        )
         for playlist in playlists["items"]:
             file = THUMBSDIR / (playlist["id"] + ".png")
             if not file.exists():
@@ -171,9 +174,22 @@ def run():
                         findAppropriateThumbnailSource(playlist["images"])
                     ).content
                 )
+                if not playlist["images"]:
+                    imageless_playlists.append(playlist["id"])
+                else:
+                    rofi.status(f"Downloading thumbnail for playlist {playlist['name']}")
+                    file.write_bytes(
+                        requests.get(
+                            findAppropriateThumbnailSource(playlist["images"])
+                        ).content
+                    )
 
         playlists_names = [
-            d["name"] + "\0icon\x1f" + str(THUMBSDIR / (d["id"] + ".png"))
+            d["name"] + (
+                "\0icon\x1f" + str(THUMBSDIR / (d["id"] + ".png"))
+                if d["id"] not in imageless_playlists
+                else ""
+            )
             for d in playlists["items"]
         ]
         index, key = rofi.select(
