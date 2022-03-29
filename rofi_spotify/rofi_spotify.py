@@ -8,15 +8,20 @@ import subprocess
 import sys
 import textwrap
 import time
+from pathlib import Path
+import requests
 
 import appdirs
 import spotipy
 from rofi import Rofi
 
+THUMBSDIR = Path.home() / ".cache" / "rofi-spotify" / "thumbs"
 
 def load_config():
     config_dir = appdirs.user_config_dir('rofi-spotify')
     config_path = os.path.join(config_dir, 'rofi-spotify.conf')
+
+    THUMBSDIR.mkdir(parents=True, exist_ok=True)
 
     if os.path.exists(config_path):
         config = configparser.ConfigParser()
@@ -118,6 +123,14 @@ def addTrackToPlaylist(rofi, rofi_args, sp, username, playlist_id, playlist_name
     return sp.user_playlist_add_tracks(username, playlist_id, {track_id}) 
 
 
+def findAppropriateThumbnailSource(images, lower=50, upper=500):
+    images = sorted(images, key=lambda i: i["height"])
+    matching = list(filter(lambda i: lower <= (i.get("height") or -1) <= upper, images))
+
+    # If the condition can't be satisfied, return a middle ground
+    return (matching[-1] if matching else images[int(len(images)/2)])["url"]
+
+
 def run():
     config, config_dir = load_config()
 
@@ -128,6 +141,7 @@ def run():
     parser.add_argument('-i', '--case-sensitive', action='store_true', help='Enable case sensitivity')
     parser.add_argument('-r', '--args', nargs=argparse.REMAINDER, help='Command line arguments for rofi. '
                                                                        'Separate each argument with a space.')
+    parser.add_argument(      '--clear-cache', action='store_true', help='Clear the downloaded thumbnails cache',)
     args = parser.parse_args()
 
     rofi_args = args.args or []
@@ -141,13 +155,48 @@ def run():
                                                                   client_secret=config['spotipy']['client_secret'],
                                                                   redirect_uri=config['spotipy']['redirect_uri'],
                                                                   scope=scope, cache_path=(config_dir + "/token")))
+    if args.clear_cache:
+        [thumb.unlink() for thumb in THUMBSDIR.glob("*.png")]
+        return
 
     if args.add_to_playlist:
         track_id, track_meta = getCurrentTrack(sp)
-        playlists = getPlaylists(sp, onlyEditable=True, username=config['spotify']['spotify_username'])
-        playlists_names = [d['name'] for d in playlists['items']]
-        index, key = rofi.select("To which playlist do you want to add " + track_meta + "? ",
-                                 playlists_names, rofi_args=rofi_args)
+        imageless_playlists = [] # List of playlist IDs
+        playlists = getPlaylists(
+            sp, onlyEditable=True, username=config["spotify"]["spotify_username"]
+        )
+        for playlist in playlists["items"]:
+            file = THUMBSDIR / (playlist["id"] + ".png")
+            if not file.exists():
+                rofi.status(f"Downloading thumbnail for playlist {playlist['name']}")
+                file.write_bytes(
+                    requests.get(
+                        findAppropriateThumbnailSource(playlist["images"])
+                    ).content
+                )
+                if not playlist["images"]:
+                    imageless_playlists.append(playlist["id"])
+                else:
+                    rofi.status(f"Downloading thumbnail for playlist {playlist['name']}")
+                    file.write_bytes(
+                        requests.get(
+                            findAppropriateThumbnailSource(playlist["images"])
+                        ).content
+                    )
+
+        playlists_names = [
+            d["name"] + (
+                "\0icon\x1f" + str(THUMBSDIR / (d["id"] + ".png"))
+                if d["id"] not in imageless_playlists
+                else ""
+            )
+            for d in playlists["items"]
+        ]
+        index, key = rofi.select(
+            "To which playlist do you want to add " + track_meta + "? ",
+            playlists_names,
+            rofi_args=rofi_args,
+        )
         if key == -1:
             sys.exit(0)
         target_playlist_id = playlists['items'][index]['id']
