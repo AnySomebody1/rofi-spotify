@@ -170,7 +170,7 @@ def run():
 
     if args.search_track:
         trackquery = rofi.text_entry('Search for a track: ', rofi_args=rofi_args)
-        results = sp.search(trackquery, limit=config['settings']['track_search_max_entries'], type="track")
+        results = sp.search(trackquery,  limit=int(config['settings']['track_search_max_entries']), type="track")
         if not results['tracks']['items']:
             rofi.status("No tracks found.", rofi_args=rofi_args)
             time.sleep(2)
