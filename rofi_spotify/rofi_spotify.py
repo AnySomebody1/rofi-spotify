@@ -122,6 +122,8 @@ def run():
     config, config_dir = load_config()
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--toggle-pause-play", action="store_true", help="Stop/resume playback")
+    parser.add_argument("-n", "--next", action="store_true", help="Skip current track")
     parser.add_argument("-a", "--add-to-playlist", action="store_true", help="Add current track to a playlist")
     parser.add_argument("-l", "--like-current", action="store_true", help="Like current track")
     parser.add_argument("-st", "--search-track", action="store_true", help="Search for a track")
@@ -142,6 +144,24 @@ def run():
                                                                   redirect_uri=config['spotipy']['redirect_uri'],
                                                                   scope=scope, cache_path=(config_dir + "/token")))
 
+    is_playing = sp.current_playback()["is_playing"]
+
+    if args.toggle_pause_play:
+        if (is_playing):
+            sp.pause_playback()
+            rofi.status("Paused.", rofi_args=rofi_args)
+        else:
+            sp.start_playback()
+            rofi.status("Resumed.", rofi_args=rofi_args)
+        is_playing = not is_playing
+        time.sleep(2)
+        rofi.close()
+    if args.next:
+        sp.next_track()
+        rofi.status("Skipped current track", rofi_args=rofi_args)
+        is_playing = not is_playing
+        time.sleep(2)
+        rofi.close()
     if args.add_to_playlist:
         track_id, track_meta = getCurrentTrack(sp)
         playlists = getPlaylists(sp, onlyEditable=True, username=config['spotify']['spotify_username'])
@@ -225,19 +245,26 @@ def run():
         sys.exit(0)
     curr_track_id, curr_track_meta = getCurrentTrack(sp)
     index, key = rofi.select("Currently playing: " + curr_track_meta + " ",
-                             ["Add current song to playlist", "Like current track", "Search track"], rofi_args=rofi_args)
+                             [
+                                 "Add current song to playlist",
+                                 "Like current track",
+                                 "Search track",
+                                 "Next track",
+                                 "Pause" if is_playing else "Resume"
+                             ], rofi_args=rofi_args)
+    if (index == -1): sys.exit(0)
+    rofi_args = args.args or []
     if index == 0:
-        rofi_args = args.args or []
         rofi_args.append("-a")
-        subprocess.run(["rofi-spotify", ", ".join(rofi_args)])
     if index == 1:
-        rofi_args = args.args or []
         rofi_args.append("-l")
-        subprocess.run(["rofi-spotify", ", ".join(rofi_args)])
     if index == 2:
-        rofi_args = args.args or []
         rofi_args.append("-st")
-        subprocess.run(["rofi-spotify", ", ".join(rofi_args)])
+    if index == 3:
+        rofi_args.append("-n")
+    if index == 4:
+        rofi_args.append("-p")
+    subprocess.run(["rofi-spotify", ", ".join(rofi_args)])
     sys.exit(0)
 
 run()
