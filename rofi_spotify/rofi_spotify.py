@@ -149,19 +149,14 @@ def run():
     if args.toggle_pause_play:
         if (is_playing):
             sp.pause_playback()
-            rofi.status("Paused.", rofi_args=rofi_args)
         else:
             sp.start_playback()
-            rofi.status("Resumed.", rofi_args=rofi_args)
         is_playing = not is_playing
-        time.sleep(2)
-        rofi.close()
+        sys.exit(0)
     if args.next:
         sp.next_track()
-        rofi.status("Skipped current track", rofi_args=rofi_args)
         is_playing = not is_playing
-        time.sleep(2)
-        rofi.close()
+        sys.exit(0)
     if args.add_to_playlist:
         track_id, track_meta = getCurrentTrack(sp)
         playlists = getPlaylists(sp, onlyEditable=True, username=config['spotify']['spotify_username'])
@@ -176,25 +171,20 @@ def run():
         if not result == 0:
             if config['settings'].getboolean('show_add_to_playlist_popups'):
                 rofi.status(track_meta + " added to " + playlists_names[index] + ".", rofi_args=rofi_args)
-                time.sleep(2)
-        rofi.close()
         sys.exit(0)
 
     if args.like_current:
         track_id, track_meta = getCurrentTrack(sp)
         sp.current_user_saved_tracks_add({track_id})
         rofi.status(track_meta + " liked.", rofi_args=rofi_args)
-        time.sleep(2)
-        rofi.close()
+        sys.exit(0)
 
 
     if args.search_track:
         trackquery = rofi.text_entry('Search for a track: ', rofi_args=rofi_args)
         results = sp.search(trackquery,  limit=int(config['settings']['track_search_max_entries']), type="track")
         if not results['tracks']['items']:
-            rofi.status("No tracks found.", rofi_args=rofi_args)
-            time.sleep(2)
-            rofi.close()
+            sys.exit(0)
         else:
             tracks = []
             for index, track in enumerate(results['tracks']['items']):
@@ -213,8 +203,7 @@ def run():
                 sp.add_to_queue(tracks[index_track]['id'])
                 if config['settings'].getboolean('show_playback_popups'):
                     rofi.status(rofi_tracks[index_track] + " added to queue.", rofi_args=rofi_args)
-                    time.sleep(2)
-                rofi.close()
+                sys.exit(0)
 
             if index_todo == 1:
                 playlists = getPlaylists(sp, onlyEditable=True, username=config['spotify']['spotify_username'])
@@ -232,15 +221,13 @@ def run():
                     if config['settings'].getboolean('show_add_to_playlist_popups'):
                         rofi.status(rofi_tracks[index_track] + " added to " + playlists_names[index_playlist] + ".",
                                 rofi_args=rofi_args)
-                        time.sleep(2)
-                    rofi.close()
+                    sys.exit(0)
 
             if index_todo == 2:
                 sp.start_playback(uris=[tracks[index_track]['uri']])
                 if config['settings'].getboolean('show_playback_popups'):
                     rofi.status("Playing " + rofi_tracks[index_track] + ".", rofi_args=rofi_args)
-                    time.sleep(2)
-                rofi.close()
+                sys.exit(0)
 
         sys.exit(0)
     curr_track_id, curr_track_meta = getCurrentTrack(sp)
