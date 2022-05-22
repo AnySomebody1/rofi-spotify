@@ -124,6 +124,7 @@ def run():
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--toggle-pause-play", action="store_true", help="Stop/resume playback")
     parser.add_argument("-n", "--next", action="store_true", help="Skip current track")
+    parser.add_argument("-b", "--previous", action="store_true", help="Go to previous track")
     parser.add_argument("-a", "--add-to-playlist", action="store_true", help="Add current track to a playlist")
     parser.add_argument("-l", "--like-current", action="store_true", help="Like current track")
     parser.add_argument("-st", "--search-track", action="store_true", help="Search for a track")
@@ -155,6 +156,10 @@ def run():
         sys.exit(0)
     if args.next:
         sp.next_track()
+        is_playing = not is_playing
+        sys.exit(0)
+    if args.previous:
+        sp.previous_track()
         is_playing = not is_playing
         sys.exit(0)
     if args.add_to_playlist:
@@ -237,6 +242,7 @@ def run():
                                  "Like current track",
                                  "Search track",
                                  "Next track",
+                                 "Previous track",
                                  "Pause" if is_playing else "Resume"
                              ], rofi_args=rofi_args)
     if (index == -1): sys.exit(0)
@@ -250,6 +256,8 @@ def run():
     if index == 3:
         rofi_args.append("-n")
     if index == 4:
+        rofi_args.append("-b")
+    if index == 5:
         rofi_args.append("-p")
     subprocess.run(["rofi-spotify", ", ".join(rofi_args)])
     sys.exit(0)
