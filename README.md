@@ -56,6 +56,7 @@ By default, the different possible options are shown.
 | -a     | --add-to-playlist   | Add current track to a playlist                                              | -       |
 | -st    | --search-track      | Search for a track                                                           | -       |
 | -n     | --next              | Skip current track                                                           | -       |
+| -b     | --previous          | Go to previous track                                                         | -       |
 | -p     | --toggle-pause-play | Pause/Resume playback                                                        | -       |
 | -i     | --case-sensitive    | Enable case sensitivity                                                      | False   |
 | -r ... | --args ...          | Command line arguments for rofi. Separate each argument with a space.        | -       |
